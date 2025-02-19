@@ -7,11 +7,27 @@ import json
 import pandas as pd
 from pathlib import Path
 import re
+import logging
+from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
 from typing import Generator
 
+# --- 日志配置 ---
+LOG_FILE = "app.log"
+logging.basicConfig(
+    handlers=[RotatingFileHandler(LOG_FILE, maxBytes=1024*1024, backupCount=5)],
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+logger = logging.getLogger(__name__)
+
+def log_event(event_type: str, status: str, details: str = ""):
+    """记录系统事件"""
+    logger.info(f"[{event_type}] {status} | {details}")
+
 # --- 加载环境变量 ---
-load_dotenv()
+load_dotenv(override=True)
 TEXTS_DIR = "texts"
 RATES_DIR = "rates"
 HISTORY_PATH = "history.json"
@@ -34,7 +50,8 @@ def load_history() -> list:
     try:
         with open(HISTORY_PATH, "r", encoding="utf-8") as f:
             return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        log_event("SYSTEM", "历史记录加载失败", str(e))
         return []
 
 def save_history(history: list) -> None:
@@ -57,6 +74,8 @@ def safe_save(content: str, directory: str, filename: str) -> str:
     return str(save_path)
 
 def validate_image_files(files: list[str]) -> None:
+    if not files:
+        raise ValueError("未上传任何图片")
     for file_path in files:
         file = Path(file_path)
         if not file.exists():
@@ -71,7 +90,8 @@ def encode_image_to_base64(image_path: str) -> str:
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode("utf-8")
     except Exception as e:
-        raise RuntimeError(f"图片编码失败: {e}") from e
+        log_event("ERROR", "图片编码失败", str(e))
+        raise
 
 # --- 核心处理逻辑 ---
 def stream_extract_text(image_paths: list[str]) -> Generator[str, None, str]:
@@ -134,45 +154,153 @@ def stream_rate_text(content: str) -> Generator[str, None, str]:
         return full_response
 
     except Exception as e:
-        raise RuntimeError(f"评分失败: {e}") from e
+        log_event("ERROR", "评分失败", str(e))
+        raise
 
 # --- Gradio界面 ---
 def create_interface():
-    with gr.Blocks(theme=gr.themes.Soft(), title="作文智能批改系统") as demo:
+    with gr.Blocks(
+        theme=gr.themes.Soft(), 
+        title="作文智能批改系统",
+        css="""
+        .drag-area {
+            border: 2px dashed #666;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            min-height: 500px;
+            position: relative;
+        }
+        .result-area {
+            overflow: none;
+            border: 2px dashed #666;
+            border-radius: 10px;
+            padding: 20px 20px 0 20px;
+        }
+        .drag-area.dragover {
+            border-color: #2196F3;
+            background: #f5fbff;
+        }
+        #upload-btn {
+        }
+        .fixed-height {
+            height: 750px;
+            overflow: auto;
+            box-sizing: border-box;
+            border: 3px solid #e0e0e0;
+            padding: 10px 10px 0 10px;
+            border-radius: 15px;
+            font-size: 25px;
+        }
+        .fixed-height::-webkit-scrollbar {
+            width: 2px;
+        }
+        .fixed-height::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        """
+    ) as demo:
         history_state = gr.State(value=load_history())
         uploaded_files = gr.State([])
 
         # 界面布局
-        gr.Markdown("# 📚 智能作文批改系统")
-        gr.Markdown("上传作文图片，自动提取文字并生成批改建议")
+        gr.Markdown("<center><h1>📚 智能作文批改系统</h1></center>")
+        gr.Markdown("<center><h3>上传作文图片，自动提取文字并生成批改建议</h3></center>")
+# --- Gradio界面 ---
+def create_interface():
+    with gr.Blocks(
+        theme=gr.themes.Soft(),
+        title="作文智能批改系统",
+        css="""
+        .drag-area {
+            border: 2px dashed #666;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            min-height: 500px;
+            position: relative;
+        }
+        .result-area {
+            overflow: visible; /* 移除外侧滚动条 */
+            border: 2px dashed #666;
+            border-radius: 10px;
+            padding: 10px 10px 0 10px;
+            display: flex; /* 使用 flex 布局 */
+            justify-content: center; /* 水平居中 */
+        }
+        .drag-area.dragover {
+            border-color: #2196F3;
+            background: #f5fbff;
+        }
+        #upload-btn {
+        }
+        .fixed-height {
+            height: 520px;
+            overflow: auto; /* 内部滚动条 */
+            box-sizing: border-box;
+            border: 3px solid #e0e0e0;
+            padding: 10px 10px 0 10px;
+            border-radius: 15px;
+            font-size: 25px;
+            width: 100%; /* 设置宽度为 100% */
+        }
+        """
+    ) as demo:
+        history_state = gr.State(value=load_history())
+        uploaded_files = gr.State([])
 
+        # 界面布局
+        gr.Markdown("<center><h1>📚 智能作文批改系统</h1></center>")
+        gr.Markdown("<center><h3>上传作文图片，自动提取文字并生成批改建议</h3></center>")
+
+         # 界面布局改进
         with gr.Row():
             with gr.Column(scale=4):
-                image_gallery = gr.Gallery(
-                    label="已上传图片",
-                    columns=3,
-                    height=400,
-                    object_fit="contain",
-                    preview=True
-                )
-                with gr.Row():
-                    upload_btn = gr.UploadButton(
-                        "上传作文图片",
-                        file_types=config.ALLOWED_EXTENSIONS,
-                        file_count="multiple",
-                        variant="primary"
+                # 改进拖拽区域
+                with gr.Column(elem_classes="drag-area"):
+                    image_gallery = gr.Gallery(
+                        label="已上传图片",  # 添加拖拽提示
+                        columns=3,
+                        height=500,
+                        object_fit="contain",
+                        preview=True,
                     )
-                    start_btn = gr.Button("开始批改", variant="stop")
+                    with gr.Row():
+                        upload_btn = gr.UploadButton(
+                            "上传作文图片",
+                            file_types=config.ALLOWED_EXTENSIONS,
+                            file_count="multiple",
+                            variant="primary",
+                            elem_id="upload-btn"
+                        )
+                        start_btn = gr.Button("开始批改", variant="stop")
                 next_btn = gr.Button("批改下一篇", variant="secondary")
 
-            with gr.Column(scale=6):
+            with gr.Column(scale=6, elem_classes="result-area"):
                 process_status = gr.Markdown("**当前状态**: 等待上传图片")
-                extracted_text = gr.Textbox(label="提取内容", lines=10, interactive=False)
-                rating_result = gr.Markdown("## 批改结果\n_等待批改中..._")
                 
+                # 固定高度内容区域
+                with gr.Tabs():
+                    with gr.TabItem("提取内容"):
+                        extracted_text = gr.Textbox(
+                            label="",
+                            lines=20,
+                            interactive=True,
+                            elem_classes="fixed-height"
+                        )
+                    
+                    with gr.TabItem("批改结果"):
+                        rating_result = gr.Markdown(
+                            "## 批改结果\n_等待批改中..._",
+                            elem_classes="fixed-height"  # 应用 fixed-height 类
+                        )
+
                 with gr.Row():
                     download_text = gr.File(label="下载文本", visible=False)
                     download_rate = gr.File(label="下载批改", visible=False)
+
+
 
         # 历史记录面板
         with gr.Accordion("批改历史", open=False):
@@ -302,3 +430,4 @@ if __name__ == "__main__":
         server_port=7860,
         share=False
     )
+
