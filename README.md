@@ -153,6 +153,12 @@ RATING_MODEL=deepseek-ai/DeepSeek-R1
 3. 检查网络连接状态
 ```
 
+### 没有配置modelscope API
+```bash
+错误: Error code: 401 - {'errors': {'message': 'Authenticaton failed, please make sure that a valid ModelScope token is supplied.'}, 'request_id': '0c3847a6-a654-4ed9-b079-964ba4038c7a'}
+- 前往modelscope平台申请API_KEY并配置.env文件中
+```
+
 ### API密钥申请
 🔗 [点击前往ModelScope官网申请](https://modelscope.cn)
 
