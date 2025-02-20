@@ -38,7 +38,16 @@ pip install -r requirements.txt
 ```bash
 # 创建配置文件
 echo "MODELSCOPE_API_KEY=你的API密钥" > .env
+```
 
+### 4. 运行代码
+```bash
+python code/grader.py
+```
+
+### 5. 进入界面
+```bash
+本地访问启动后的端口即可
 ```
 
 ## 🖥️ 界面导览
