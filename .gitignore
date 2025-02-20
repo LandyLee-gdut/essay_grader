@@ -1,0 +1,14 @@
+# 忽略指定目录
+rates/
+texts/
+
+# 忽略环境文件
+.env
+
+# 忽略历史记录文件
+history.json
+
+# 常见忽略项（按需添加）
+*.log
+node_modules/
+.DS_Store
