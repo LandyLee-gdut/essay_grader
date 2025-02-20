@@ -1,4 +1,3 @@
-```markdown
 # AI作文批改助手使用指南
 
 ## 一键上传作文照片，AI老师即刻批改！🎉
@@ -9,24 +8,23 @@
 - 🧑🏫 **AI专业批改**：生成结构化评分报告
 - 📚 **历史记录管理**：自动保存每次批改记录
 
-##  环境准备🛠️
+## 🛠️ 环境准备
 
 ### 最低配置
-- 操作系统：Windows 10/macOS 12+/Linux Ubuntu 20.04+
-- 内存：4GB RAM
-- 存储：500MB可用空间
+- 💻 操作系统：Windows 10/macOS 12+/Linux Ubuntu 20.04+
+- 🧠 内存：4GB RAM
+- 💾 存储：500MB可用空间
 
 ### 推荐配置
-- CPU：Intel i5 10代+/Apple M1+
-- 内存：8GB RAM
-- 网络：稳定互联网连接
+- ⚡ CPU：Intel i5 10代+/Apple M1+
+- 🚀 内存：8GB RAM
+- 🌐 网络：稳定互联网连接
 
 ## 快速安装🚀
 
 ### 1. 获取代码
-git clone https://github.com/yourname/essay-grader.git
-
 ```bash
+git clone https://github.com/yourname/essay-grader.git
 cd essay-grader
 ```
 
@@ -169,6 +167,4 @@ RATING_MODEL=deepseek-ai/DeepSeek-R1
 
 <div align="center">
   <p>💖 您的使用体验是我们进步的动力！</p>
-  <img src="https://via.placeholder.com/100x30.png?text=Star+This+Repo" alt="Star按钮">
 </div>
-```
