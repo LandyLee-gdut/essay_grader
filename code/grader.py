@@ -142,7 +142,8 @@ def stream_rate_text(content: str) -> Generator[str, None, str]:
                 {"role": "system", "content": "你是一位专业的语文老师，需要根据评分标准对作文进行详细批改"},
                 {"role": "user", "content": f"{prompt_template}\n作文内容如下：{content}"}
             ],
-            stream=True
+            stream=True,
+            temperature=1
         )
 
         full_response = ""

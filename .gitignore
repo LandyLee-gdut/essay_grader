@@ -12,3 +12,6 @@ history.json
 *.log
 node_modules/
 .DS_Store
+
+key.txt
+key.txt.pub
