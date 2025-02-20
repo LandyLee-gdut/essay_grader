@@ -26,8 +26,9 @@
 ### 1. 获取代码
 ```bash
 git clone https://github.com/yourname/essay-grader.git
-cd essay-grader
 ```
+```bash
+cd essay-grader
 ```
 
 ### 2. 安装依赖
