@@ -38,8 +38,8 @@ os.makedirs(RATES_DIR, exist_ok=True)
 class Config:
     API_BASE_URL = os.getenv("MODELSCOPE_API_ENDPOINT", "https://api-inference.modelscope.cn/v1/")
     API_KEY = os.getenv("MODELSCOPE_API_KEY")
-    EXTRACTION_MODEL = "Qwen/Qwen2.5-VL-7B-Instruct"
-    RATING_MODEL = "Qwen/Qwen2.5-32B-Instruct"
+    EXTRACTION_MODEL = os.getenv("EXTRACTION_MODEL", "Qwen/Qwen2.5-VL-7B-Instruct") 
+    RATING_MODEL = os.getenv("RATING_MODEL", "Qwen/Qwen2.5-32B-Instruct") 
     MAX_FILE_SIZE_MB = 5
     ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 
